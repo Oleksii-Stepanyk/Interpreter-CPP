@@ -64,15 +64,98 @@ public:
 	}
 };
 
+class ShuntingYard {
+private:
+	int Precedence(string op)
+	{
+		if (op == "max" || op == "min") return 1;
+		if (op == "+" || op == "-") return 2;
+		if (op == "*" || op == "/") return 3;
+		if (op == "pow") return 4;
+		if (op == "abs") return 5;
+		return 0;
+	}
+
+	bool IsLeftAssociative(string op)
+	{
+		if (op == "+" || op == "-" || op == "*" || op == "/") return true;
+		return false;
+	}
+
+public:
+	queue<string> toRPN(vector<string> tokens) {
+		regex numberRegex("^-?[0-9]+$");
+		regex operatorRegex("[\\+\\-\\*\\/]");
+		regex functionRegex("(pow)|(abs)|(min)|(max)");
+
+		queue<string> outputQueue = {};
+		stack<string> operatorStack = {};
+
+		for (string& token : tokens)
+		{
+			if (regex_match(token, numberRegex))
+			{
+				outputQueue.push(token);
+			}
+
+			else if (regex_match(token, functionRegex))
+			{
+				operatorStack.push(token);
+			}
+			else if (regex_match(token, operatorRegex))
+			{
+				if (!operatorStack.empty()) {
+
+					while (operatorStack.top() != ")" &&
+						(Precedence(operatorStack.top()) > Precedence(token) ||
+							Precedence(operatorStack.top()) == Precedence(token) && IsLeftAssociative(token)))
+					{
+						outputQueue.push(operatorStack.top());
+						operatorStack.pop();
+					}
+				}
+				operatorStack.push(token);
+			}
+			else if (token == "(") {
+				operatorStack.push(token);
+			}
+			else if (token == ")") {
+				while (operatorStack.top() != "(")
+				{
+					outputQueue.push(operatorStack.top());
+					operatorStack.pop();
+				}
+				operatorStack.pop();
+				break;
+			}
+		}
+		while (!operatorStack.empty())
+		{
+			outputQueue.push(operatorStack.top());
+			operatorStack.pop();
+		}
+		return outputQueue;
+	}
+};
+
 int main()
 {
 	Tokenizer tokenizer;
+	ShuntingYard shuntingYard;
 	string input;
 	getline(cin, input);
 	vector<string> tokens = tokenizer.Tokenize(input);
 	for (string token : tokens)
 	{
 		cout << token << " ";
+	}
+	cout << endl;
+	queue<string> rpn = shuntingYard.toRPN(tokens);
+	queue<string> rpnCopy = rpn;
+	while (!rpnCopy.empty())
+	{
+		cout << rpnCopy.front() << " ";
+		rpnCopy.pop();
 	}
 	cout << endl;
 	return 0;
