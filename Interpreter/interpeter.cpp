@@ -138,10 +138,79 @@ public:
 	}
 };
 
+class Calculator {
+private:
+	int ApplyOperation(int firstOperand, int secondOperand, string op)
+	{
+		if (op == "+") return firstOperand + secondOperand;
+		if (op == "-") return firstOperand - secondOperand;
+		if (op == "*") return firstOperand * secondOperand;
+		if (op == "/") {
+			if (secondOperand == 0)
+			{
+				throw new runtime_error("Cannot be divided by zero.");
+			}
+			return firstOperand / secondOperand;
+		}
+		if (op == "pow") return pow(firstOperand, secondOperand);
+		if (op == "abs") return abs(firstOperand);
+		if (op == "max") return max(firstOperand, secondOperand);
+		if (op == "min") return min(firstOperand, secondOperand);
+		return 0;
+	}
+
+public:
+	int Calculate(queue<string> rpnQueue)
+	{
+		regex numberRegex("^-?[0-9]+$");
+		regex operatorRegex("[\\+\\-\\*\\/]");
+		stack<int> resultStack = {};
+
+		for (int count = rpnQueue.size(); count > 0; count--)
+		{
+			string token = rpnQueue.front();
+			rpnQueue.pop();
+
+			if (regex_match(token, numberRegex))
+			{
+				int number = stoi(token);
+				resultStack.push(number);
+			}
+			else if (token == "abs")
+			{
+				int firstOperand = resultStack.top();
+				resultStack.pop();
+
+				int result = ApplyOperation(firstOperand, 0, token);
+				resultStack.push(result);
+			}
+			else if ((token == "max" || token == "min" || token == "pow") || (regex_match(token, operatorRegex) && resultStack.size() >= 2))
+			{
+				int secondOperand = resultStack.top();
+				resultStack.pop();
+
+				int firstOperand = resultStack.top();
+				resultStack.pop();
+
+				int result = ApplyOperation(firstOperand, secondOperand, token);
+				resultStack.push(result);
+			}
+			else
+			{
+				cout << "Invalid token or insufficient operands for operation: " << token << endl;
+				exit(1);
+			}
+		}
+
+		return resultStack.top();
+	}
+};
+
 int main()
 {
 	Tokenizer tokenizer;
 	ShuntingYard shuntingYard;
+	Calculator calculator;
 	string input;
 	getline(cin, input);
 	vector<string> tokens = tokenizer.Tokenize(input);
@@ -158,5 +227,7 @@ int main()
 		rpnCopy.pop();
 	}
 	cout << endl;
+	int result = calculator.Calculate(rpn);
+	cout << result << endl;
 	return 0;
 }
