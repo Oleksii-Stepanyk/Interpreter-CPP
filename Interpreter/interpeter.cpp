@@ -48,7 +48,7 @@ public:
 			else if (index + 2 < input.size() && regex_match(input.substr(index, 3), functionRegex)) {
 				int leftParenthesesIndex = index + 3;
 				if (input[leftParenthesesIndex] != '(') throw runtime_error("Values for cos/sin functions must be in parentheses");
-				string function = input.substr(index, 3);
+				string function = currentChar + input[index + 1] + input[index + 2];
 				index += 2;
 				tokens.push_back(function);
 			}
@@ -192,8 +192,13 @@ public:
 				exit(1);
 			}
 		}
-
-		return resultStack.top();
+		if (!resultStack.empty()) {
+			return resultStack.top();
+		}
+		else {
+			cout << "No result found" << endl;
+			exit(1);
+		}
 	}
 };
 
