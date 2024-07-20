@@ -91,10 +91,7 @@ public:
 			if (regex_match(token, numberRegex)) {
 				outputQueue.push(token);
 			}
-			else if (regex_match(token, functionRegex)) {
-				operatorStack.push(token);
-			}
-			else if (regex_match(token, operatorRegex)) {
+			else if (regex_match(token, operatorRegex) || regex_match(token, functionRegex)) {
 				while (!operatorStack.empty() && operatorStack.top() != "(" &&
 					(Precedence(operatorStack.top()) > Precedence(token) ||
 						(Precedence(operatorStack.top()) == Precedence(token) && IsLeftAssociative(token)))) {
